@@ -10,8 +10,6 @@ import lombok.Setter;
 @Getter @Setter
 public class ProductQuantityUpdateDto {
 
-    private Long productId;
-
     private int quantity;
 
 }

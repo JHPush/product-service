@@ -1,5 +1,7 @@
 package com.inkcloud.product_service.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,5 +19,9 @@ public class CategoryUpdateDto {
     private String name;
 
     private Long parentId;
+
+    private LocalDateTime createdAt;
+    
+    private LocalDateTime updatedAt;
 
 }

@@ -2,6 +2,8 @@ package com.inkcloud.product_service.dto;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,14 +14,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter @Setter
-public class ProductSearchCondition {
+public class ProductSearchResultDto {
 
-    private String keyword; // 검색어
+    private Page<ProductResponseDto> products;
 
-    private List<String> searchFields; // 검색 대상 필드
-
-    private List<Long> categoryIds; // 카테고리 필터링용
+    private List<CategoryCountDto> categoryCounts;
     
-    private String sortType; // 정렬 방식
-
 }

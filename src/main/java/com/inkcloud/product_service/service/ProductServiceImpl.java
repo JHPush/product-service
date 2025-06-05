@@ -1,6 +1,10 @@
 package com.inkcloud.product_service.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,22 +12,29 @@ import org.springframework.transaction.annotation.Transactional;
 import com.inkcloud.product_service.domain.Category;
 import com.inkcloud.product_service.domain.Product;
 import com.inkcloud.product_service.domain.Status;
+import com.inkcloud.product_service.dto.CategoryCountDto;
+import com.inkcloud.product_service.dto.ProductQuantityDeltaDto;
 import com.inkcloud.product_service.dto.ProductQuantityUpdateDto;
 import com.inkcloud.product_service.dto.ProductRequestDto;
 import com.inkcloud.product_service.dto.ProductResponseDto;
 import com.inkcloud.product_service.dto.ProductSearchCondition;
+import com.inkcloud.product_service.dto.ProductSearchResultDto;
 import com.inkcloud.product_service.dto.ProductStatusUpdateDto;
 import com.inkcloud.product_service.repository.CategoryRepository;
+import com.inkcloud.product_service.repository.CustomProductRepository;
 import com.inkcloud.product_service.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductServiceImpl implements ProductService{
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    //private final CustomProductRepository customProductRepository;
 
     @Override
     @Transactional
@@ -31,6 +42,8 @@ public class ProductServiceImpl implements ProductService{
         
         Product product = dtoToEntity(dto);
         Product saved = productRepository.save(product);
+        log.info("상품 등록 완료: ID={}", saved.getId());
+
         return entityToDto(saved);
     }
 
@@ -40,15 +53,26 @@ public class ProductServiceImpl implements ProductService{
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
+
         return entityToDto(product);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductResponseDto> searchProducts(ProductSearchCondition condition, Pageable pageable) {
+    public ProductSearchResultDto searchProducts(ProductSearchCondition condition, Pageable pageable) {
+        
+        // 1. 검색된 상품 페이지 조회
+        Page<Product> productPage = productRepository.searchProducts(condition, pageable);
+        List<ProductResponseDto> productDtos = productPage.map(this::entityToDto).getContent();
 
-        Page<Product> page = productRepository.searchProducts(condition.getKeyword(), condition.getCategoryId(), pageable);
-        return page.map(this::entityToDto);
+        // 2. 카테고리별 상품 개수 조회
+        List<CategoryCountDto> categoryCounts = productRepository.countProductsByCategory(condition);
+
+        // 3. 결과 통합 DTO 구성
+        return ProductSearchResultDto.builder()
+                .products(new PageImpl<>(productDtos, pageable, productPage.getTotalElements()))
+                .categoryCounts(categoryCounts)
+                .build();
     }
 
     @Override
@@ -72,25 +96,31 @@ public class ProductServiceImpl implements ProductService{
         product.setImage(dto.getImage());
         product.setQuantity(dto.getQuantity());
 
+        log.info("상품 정보 수정 완료: ID={}", productId);
+
         return entityToDto(product);
     }
 
     @Override
     @Transactional
-    public void updateProductStatus(ProductStatusUpdateDto dto) {
+    public void updateProductStatus(Long productId, ProductStatusUpdateDto dto) {
 
-        Product product = productRepository.findById(dto.getProductId())
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
+
         product.setStatus(dto.getStatus());
+        log.info("상품 상태 변경: ID={}, 상태={}", productId, dto.getStatus());
     }
 
     @Override
     @Transactional
-    public void updateProductQuantity(ProductQuantityUpdateDto dto) {
+    public void updateProductQuantity(Long productId, ProductQuantityUpdateDto dto) {
 
-        Product product = productRepository.findById(dto.getProductId())
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
+
         product.setQuantity(dto.getQuantity());
+        log.info("상품 수량 수정: ID={}, 새 수량={}", productId, dto.getQuantity());
     }
 
     @Override
@@ -100,6 +130,23 @@ public class ProductServiceImpl implements ProductService{
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
         return product.getQuantity();
+    }
+
+    @Override
+    public void updateProductQuantityDelta(Long productId, ProductQuantityDeltaDto dto) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다."));
+
+        int updatedQuantity = product.getQuantity() + dto.getQuantityDelta();
+
+        if (updatedQuantity < 0) {
+            throw new IllegalArgumentException("재고가 부족합니다.");
+        }
+
+        product.setQuantity(updatedQuantity);
+        productRepository.save(product);
+
+        log.info("상품 수량 증감: ID={}, 증감량={}, 최종 수량={}", productId, dto.getQuantityDelta(), product.getQuantity());
     }
 
 

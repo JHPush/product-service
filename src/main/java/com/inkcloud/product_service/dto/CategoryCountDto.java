@@ -1,7 +1,5 @@
 package com.inkcloud.product_service.dto;
 
-import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,16 +10,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter @Setter
-public class CategoryResponseDto {
+public class CategoryCountDto {
 
-    private Long id;
+    private Long categoryId;
 
-    private String name;
+    private String categoryName;
 
-    private Long parentId;
-
-    private LocalDateTime createdAt;
-    
-    private LocalDateTime updatedAt;
+    private long count;
     
 }

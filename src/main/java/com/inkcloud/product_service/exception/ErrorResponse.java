@@ -1,17 +1,19 @@
-package com.inkcloud.product_service.dto;
-
-import com.inkcloud.product_service.domain.Status;
+package com.inkcloud.product_service.exception;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter @Setter
-public class ProductStatusUpdateDto {
+public class ErrorResponse {
 
-    private Status status;
+    private String code;
+
+    private String message;
     
 }
