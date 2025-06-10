@@ -14,6 +14,7 @@ import com.inkcloud.product_service.domain.Product;
 import com.inkcloud.product_service.domain.Status;
 import com.inkcloud.product_service.dto.CategoryCountDto;
 import com.inkcloud.product_service.dto.ProductQuantityDeltaDto;
+import com.inkcloud.product_service.dto.ProductQuantityResponseDto;
 import com.inkcloud.product_service.dto.ProductQuantityUpdateDto;
 import com.inkcloud.product_service.dto.ProductRequestDto;
 import com.inkcloud.product_service.dto.ProductResponseDto;
@@ -21,7 +22,6 @@ import com.inkcloud.product_service.dto.ProductSearchCondition;
 import com.inkcloud.product_service.dto.ProductSearchResultDto;
 import com.inkcloud.product_service.dto.ProductStatusUpdateDto;
 import com.inkcloud.product_service.repository.CategoryRepository;
-import com.inkcloud.product_service.repository.CustomProductRepository;
 import com.inkcloud.product_service.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,6 @@ public class ProductServiceImpl implements ProductService{
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    //private final CustomProductRepository customProductRepository;
 
     @Override
     @Transactional
@@ -125,28 +124,43 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     @Transactional(readOnly = true)
-    public int getProductQuantity(Long productId) {
+    public List<ProductQuantityResponseDto> getProductQuantity(List<Long> productIds) {
+        List<Product> products = productRepository.findAllById(productIds);
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
-        return product.getQuantity();
+        if (products.size() != productIds.size()) {
+            throw new IllegalArgumentException("일부 상품이 존재하지 않습니다.");
+        }
+
+        return products.stream()
+                .map(p -> new ProductQuantityResponseDto(p.getId(), p.getQuantity(), p.getStatus()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void updateProductQuantityDelta(Long productId, ProductQuantityDeltaDto dto) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다."));
+    @Transactional
+    public void updateProductQuantityDelta(ProductQuantityDeltaDto dto) {
+        for (ProductQuantityDeltaDto.ProductQuantityDeltaItem item : dto.getItems()) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다. ID=" + item.getProductId()));
 
-        int updatedQuantity = product.getQuantity() + dto.getQuantityDelta();
+            int updatedQuantity = product.getQuantity() + item.getQuantityDelta();
 
-        if (updatedQuantity < 0) {
-            throw new IllegalArgumentException("재고가 부족합니다.");
+            if (updatedQuantity < 0) {
+                throw new IllegalArgumentException("상품 ID=" + item.getProductId() + "의 재고가 부족합니다.");
+            }
+
+            product.setQuantity(updatedQuantity);
+
+            // 상태 변경
+            if (updatedQuantity <= 0) {
+                product.setStatus(Status.OUT_OF_STOCK);
+            } else {
+                product.setStatus(Status.ON_SALE);
+            }
+
+            productRepository.save(product);
+            log.info("상품 ID={} 수량 {} → 최종 수량: {}, 상태: {}", item.getProductId(), item.getQuantityDelta(), updatedQuantity, product.getStatus());
         }
-
-        product.setQuantity(updatedQuantity);
-        productRepository.save(product);
-
-        log.info("상품 수량 증감: ID={}, 증감량={}, 최종 수량={}", productId, dto.getQuantityDelta(), product.getQuantity());
     }
 
 

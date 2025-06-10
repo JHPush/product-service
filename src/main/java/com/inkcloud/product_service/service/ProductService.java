@@ -1,9 +1,11 @@
 package com.inkcloud.product_service.service;
 
-import org.springframework.data.domain.Page;
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 
 import com.inkcloud.product_service.dto.ProductQuantityDeltaDto;
+import com.inkcloud.product_service.dto.ProductQuantityResponseDto;
 import com.inkcloud.product_service.dto.ProductQuantityUpdateDto;
 import com.inkcloud.product_service.dto.ProductRequestDto;
 import com.inkcloud.product_service.dto.ProductResponseDto;
@@ -32,9 +34,9 @@ public interface ProductService {
     void updateProductQuantity(Long productId, ProductQuantityUpdateDto dto);
 
     // 재고 수량 확인
-    int getProductQuantity(Long productId);
+    List<ProductQuantityResponseDto> getProductQuantity(List<Long> productIds);
 
     // 재고 증감
-    void updateProductQuantityDelta(Long productId, ProductQuantityDeltaDto dto);
+    void updateProductQuantityDelta(ProductQuantityDeltaDto dto);
 
 }

@@ -1,6 +1,7 @@
 package com.inkcloud.product_service.controller;
 
-import org.springframework.data.domain.Page;
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.inkcloud.product_service.dto.ProductQuantityDeltaDto;
+import com.inkcloud.product_service.dto.ProductQuantityResponseDto;
 import com.inkcloud.product_service.dto.ProductQuantityUpdateDto;
 import com.inkcloud.product_service.dto.ProductRequestDto;
 import com.inkcloud.product_service.dto.ProductResponseDto;
@@ -110,23 +112,21 @@ public class ProductController {
     }
 
     // 7. 재고 수량 조회
-    @GetMapping("/{id}/quantity")
-    public ResponseEntity<Integer> getProductQuantity(@PathVariable Long id) {
+    @GetMapping("/quantities")
+    public ResponseEntity<List<ProductQuantityResponseDto>> getProductQuantity(
+            @RequestParam("product_id") List<Long> productIds) {
 
-        int quantity = productService.getProductQuantity(id);
-        log.info("상품 재고 조회: ID={}, 수량={}", id, quantity);
+        List<ProductQuantityResponseDto> result = productService.getProductQuantity(productIds);
 
-        return ResponseEntity.ok(quantity);
+        return ResponseEntity.ok(result);
     }
 
     // 8. 재고 증감
-    @PatchMapping("/{id}/quantity-delta")
-    public ResponseEntity<String> updateProductQuantityDelta(
-            @PathVariable Long id,
-            @RequestBody ProductQuantityDeltaDto dto) {
+    @PutMapping("/quantity-delta")
+    public ResponseEntity<String> updateProductQuantityDelta(@RequestBody ProductQuantityDeltaDto dto) {
 
-        productService.updateProductQuantityDelta(id, dto);
-        log.info("상품 재고 증감: ID={}, 변화량={}", id, dto.getQuantityDelta());
+        productService.updateProductQuantityDelta(dto);
+        log.info("상품 재고 증감 요청 처리 완료: {}", dto.getItems());
         
         return ResponseEntity.ok("재고가 변경되었습니다.");
     }
