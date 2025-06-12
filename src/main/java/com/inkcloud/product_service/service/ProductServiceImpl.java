@@ -146,11 +146,11 @@ public class ProductServiceImpl implements ProductService{
     @Transactional
     public void updateProductQuantityDelta(ProductQuantityDeltaDto dto) {
 
-        for (ProductQuantityDeltaDto.ProductQuantityDeltaItem item : dto.getItems()) {
+        for (ProductQuantityDeltaDto.ProductQuantityDeltaItem item : dto.getDtos()) {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다. ID=" + item.getProductId()));
 
-            int updatedQuantity = product.getQuantity() + item.getQuantityDelta();
+            int updatedQuantity = product.getQuantity() - item.getDeltaQuantity();
 
             if (updatedQuantity < 0) {
                 throw new IllegalArgumentException("상품 ID=" + item.getProductId() + "의 재고가 부족합니다.");
@@ -166,7 +166,7 @@ public class ProductServiceImpl implements ProductService{
             }
 
             productRepository.save(product);
-            log.info("상품 ID={} 수량 {} → 최종 수량: {}, 상태: {}", item.getProductId(), item.getQuantityDelta(), updatedQuantity, product.getStatus());
+            log.info("상품 ID={} 수량 {} → 최종 수량: {}, 상태: {}", item.getProductId(), item.getDeltaQuantity(), updatedQuantity, product.getStatus());
         }
     }
 

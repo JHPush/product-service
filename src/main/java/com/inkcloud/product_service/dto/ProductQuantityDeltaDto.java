@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter @Setter
 public class ProductQuantityDeltaDto {
 
-    private List<ProductQuantityDeltaItem> items;
+    private List<ProductQuantityDeltaItem> dtos;
 
     private String orderId;
 
@@ -17,7 +17,7 @@ public class ProductQuantityDeltaDto {
 
         private Long productId;
         
-        private int quantityDelta;
+        private int deltaQuantity;
     
     }
 

@@ -126,7 +126,7 @@ public class ProductController {
     public ResponseEntity<String> updateProductQuantityDelta(@RequestBody ProductQuantityDeltaDto dto) {
 
         productService.updateProductQuantityDelta(dto);
-        log.info("상품 재고 증감 요청 처리 완료: {}", dto.getItems());
+        log.info("상품 재고 증감 요청 처리 완료: {}", dto.getDtos());
         
         return ResponseEntity.ok("재고가 변경되었습니다.");
     }

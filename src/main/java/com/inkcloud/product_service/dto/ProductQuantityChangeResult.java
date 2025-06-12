@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class ProductQuantityChangeResult {
 
-    private String orderId;
-
-    private boolean isSuccessful;
+    String orderId;
+    Boolean isSuccessful;
     
 }
