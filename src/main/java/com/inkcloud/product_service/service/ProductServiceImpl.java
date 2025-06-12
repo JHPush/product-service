@@ -6,13 +6,17 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inkcloud.product_service.domain.Category;
 import com.inkcloud.product_service.domain.Product;
 import com.inkcloud.product_service.domain.Status;
 import com.inkcloud.product_service.dto.CategoryCountDto;
+import com.inkcloud.product_service.dto.ProductQuantityChangeResult;
 import com.inkcloud.product_service.dto.ProductQuantityDeltaDto;
 import com.inkcloud.product_service.dto.ProductQuantityResponseDto;
 import com.inkcloud.product_service.dto.ProductQuantityUpdateDto;
@@ -34,6 +38,8 @@ public class ProductServiceImpl implements ProductService{
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final KafkaTemplate<String, ProductQuantityChangeResult> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -139,6 +145,7 @@ public class ProductServiceImpl implements ProductService{
     @Override
     @Transactional
     public void updateProductQuantityDelta(ProductQuantityDeltaDto dto) {
+
         for (ProductQuantityDeltaDto.ProductQuantityDeltaItem item : dto.getItems()) {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다. ID=" + item.getProductId()));
@@ -160,6 +167,31 @@ public class ProductServiceImpl implements ProductService{
 
             productRepository.save(product);
             log.info("상품 ID={} 수량 {} → 최종 수량: {}, 상태: {}", item.getProductId(), item.getQuantityDelta(), updatedQuantity, product.getStatus());
+        }
+    }
+
+    @KafkaListener(topics = "stock-change", groupId = "order_group")
+    @Transactional
+    public void handleStockChangeEvent(String message) {
+        
+        log.info("Kafka 수신 - 재고 변경 요청: {}", message);
+        
+        try {
+            ProductQuantityDeltaDto dto = objectMapper.readValue(message, ProductQuantityDeltaDto.class);
+            boolean success = true;
+            try {
+                updateProductQuantityDelta(dto);
+            } catch (Exception e) {
+                log.error("재고 증감 처리 실패: {}", e.getMessage());
+                success = false;
+            }
+
+            ProductQuantityChangeResult result = new ProductQuantityChangeResult(dto.getOrderId(), success);
+            kafkaTemplate.send("stock-confirm", result);
+            log.info("재고 처리 결과 발행 완료: {}", result);
+
+        } catch (Exception e) {
+            log.error("Kafka 이벤트 처리 중 오류", e);
         }
     }
 
