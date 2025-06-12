@@ -31,7 +31,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(org.springframework.http.HttpMethod.POST,
+                .requestMatchers(org.springframework.http.HttpMethod.GET,
                  "/api/v1/products/**", "/api/v1/categories/**").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 -> oauth2
