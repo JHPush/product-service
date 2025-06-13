@@ -12,6 +12,8 @@ public class ProductQuantityDeltaDto {
 
     private String orderId;
 
+    private Integer check;
+
     @Getter @Setter
     public static class ProductQuantityDeltaItem {
 

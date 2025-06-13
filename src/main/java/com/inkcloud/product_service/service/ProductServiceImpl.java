@@ -187,7 +187,8 @@ public class ProductServiceImpl implements ProductService{
             }
 
             ProductQuantityChangeResult result = new ProductQuantityChangeResult(dto.getOrderId(), success);
-            kafkaTemplate.send("stock-confirm", result);
+            if(dto.getCheck()<0)
+                kafkaTemplate.send("stock-confirm", result);
             log.info("재고 처리 결과 발행 완료: {}", result);
 
         } catch (Exception e) {
