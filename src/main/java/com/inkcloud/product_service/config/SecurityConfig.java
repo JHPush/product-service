@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,7 +18,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.extern.slf4j.Slf4j;
-
 
 @Configuration
 @EnableWebSecurity
@@ -31,12 +31,21 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(org.springframework.http.HttpMethod.GET,
-                 "/api/v1/products/**", "/api/v1/categories/**").permitAll()
-                .anyRequest().authenticated())
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/products/**", "/api/v1/categories/**").permitAll()
+
+                .requestMatchers(HttpMethod.POST, "/api/v1/products/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/products/**").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.POST, "/api/v1/categories/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").hasRole("ADMIN")
+
+                .anyRequest().authenticated()
+            )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
-        
+
         return http.build();
     }
 
@@ -45,7 +54,8 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    //Keycloak JWT의 역할 정보를 Spring Security 권한으로 변환
+
+    //Keycloak JWT의 realm_access.roles -> ROLE_ADMIN 과 같은 Spring Security 권한으로 변환
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
@@ -54,10 +64,10 @@ public class SecurityConfig {
             if (realmAccess == null || realmAccess.isEmpty()) {
                 return Collections.emptyList();
             }
-            
+
             Collection<String> roles = (Collection<String>) realmAccess.get("roles");
             return roles.stream()
-                .map(SimpleGrantedAuthority::new)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .collect(Collectors.toList());
         });
         return converter;

@@ -2,6 +2,8 @@ package com.inkcloud.product_service.dto;
 
 import java.time.LocalDate;
 
+import com.inkcloud.product_service.domain.Status;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,6 +29,8 @@ public class ProductRequestDto {
     private int price;
 
     private LocalDate publicationDate;
+
+    private Status status;
 
     private String introduction;
 

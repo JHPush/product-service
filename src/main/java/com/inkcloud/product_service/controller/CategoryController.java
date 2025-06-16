@@ -3,6 +3,7 @@ package com.inkcloud.product_service.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     // 1. 카테고리 등록
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<String> createCategory(@RequestBody CategoryRequestDto requestDto) {
 
@@ -49,6 +51,7 @@ public class CategoryController {
     }
 
     // 3. 카테고리 수정
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<String> updateCategory(@PathVariable Long id,
                                                  @RequestBody CategoryUpdateDto updateDto) {
@@ -60,6 +63,7 @@ public class CategoryController {
     }
 
     // 4. 카테고리 삭제
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
 

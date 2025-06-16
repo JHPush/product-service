@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -38,6 +39,7 @@ public class ProductController {
     private final ProductService productService;
 
     // 1. 상품 등록
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ProductResponseDto> createProduct(@RequestBody ProductRequestDto dto) {
 
@@ -76,6 +78,7 @@ public class ProductController {
     }
 
     // 4. 상품 정보 수정
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(
             @PathVariable Long id,
@@ -88,6 +91,7 @@ public class ProductController {
     }
 
     // 5. 상품 상태 변경
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<String> updateProductStatus(
             @PathVariable Long id,
@@ -100,6 +104,7 @@ public class ProductController {
     }
 
     // 6. 재고 수량 변경
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/quantity")
     public ResponseEntity<String> updateProductQuantity(
             @PathVariable Long id,
