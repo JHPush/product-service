@@ -81,7 +81,6 @@ public class Product {
         this.updatedAt = LocalDateTime.now();
     }
 
-<<<<<<< HEAD
     public void updateFrom(ProductRequestDto dto, Category category) {
         this.name = dto.getName();
         this.isbn = dto.getIsbn();
@@ -109,15 +108,5 @@ public class Product {
             this.status = Status.ON_SALE;
         }
     }
-=======
-    // 소수 첫째자리로 반올림
-    // public void setRating(double rating) {
-    //     this.rating = Math.round(rating * 10) / 10.0;
-    // }
-
-    // public double getRating() {
-    //     return rating;
-    // }
->>>>>>> feature-100
 
 }
