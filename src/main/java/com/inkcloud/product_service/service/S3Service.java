@@ -43,7 +43,7 @@ public class S3Service {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
             .key("products/" + filename)
-            .acl("bucket-owner-full-control")
+            //.acl("bucket-owner-full-control")
             .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
