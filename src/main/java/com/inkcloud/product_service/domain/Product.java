@@ -3,6 +3,8 @@ package com.inkcloud.product_service.domain;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.inkcloud.product_service.dto.ProductRequestDto;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -77,6 +79,34 @@ public class Product {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateFrom(ProductRequestDto dto, Category category) {
+        this.name = dto.getName();
+        this.isbn = dto.getIsbn();
+        this.author = dto.getAuthor();
+        this.publisher = dto.getPublisher();
+        this.category = category;
+        this.price = dto.getPrice();
+        this.publicationDate = dto.getPublicationDate();
+        this.introduction = dto.getIntroduction();
+        this.image = dto.getImage();
+        this.quantity = dto.getQuantity();
+
+        // 상태 수동 설정 (DISCONTINUED는 수동으로만 설정 가능)
+        if (dto.getStatus() != null) {
+            this.status = dto.getStatus();
+        }
+
+        // 조건 1: 재고가 0이면 무조건 품절
+        if (this.quantity <= 0) {
+            this.status = Status.OUT_OF_STOCK;
+        }
+
+        // 조건 2 & 3: 재고가 0 이상일 때만 판매 상태 자동 복귀
+        if (this.quantity > 0 && (this.status != Status.DISCONTINUED)) {
+            this.status = Status.ON_SALE;
+        }
     }
 
 }

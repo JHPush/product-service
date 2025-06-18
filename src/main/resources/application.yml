@@ -59,6 +59,9 @@ cloud:
       bucket: ${AWS_S3_BUCKET}
     region:
       static: ap-northeast-2
+    # credentials:
+    #   access-key: ${AWS_ACCESS_KEY_ID}
+    #   secret-key: ${AWS_SECRET_ACCESS_KEY}
 
 
 # 로깅 처리

@@ -90,19 +90,9 @@ public class ProductServiceImpl implements ProductService{
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
-        product.setName(dto.getName());
-        product.setIsbn(dto.getIsbn());
-        product.setAuthor(dto.getAuthor());
-        product.setPublisher(dto.getPublisher());
-        product.setCategory(category);
-        product.setPrice(dto.getPrice());
-        product.setPublicationDate(dto.getPublicationDate());
-        product.setStatus(dto.getStatus());
-        product.setIntroduction(dto.getIntroduction());
-        product.setImage(dto.getImage());
-        product.setQuantity(dto.getQuantity());
+        product.updateFrom(dto, category);
 
-        log.info("상품 정보 수정 완료: ID={}", productId);
+        log.info("상품 정보 수정 완료: ID={}, 수량={}, 상태={}", productId, product.getQuantity(), product.getStatus());
 
         return entityToDto(product);
     }
