@@ -59,9 +59,6 @@ cloud:
       bucket: ${AWS_S3_BUCKET}
     region:
       static: ap-northeast-2
-    credentials:
-      access-key: ${AWS_ACCESS_KEY_ID}
-      secret-key: ${AWS_SECRET_ACCESS_KEY}
 
 
 # 로깅 처리
@@ -80,15 +77,15 @@ logging:
 # Eureka-Server에 자가 등록 설정
 #-------------------------------------------------------------------------------
 
-eureka:
-  instance:
-    instance-id: ${spring.application.name}:${spring.cloud.client.hostname}:${server.port}
-    prefer-ip-address: true   # Eureka 클라이언트가 자신을 등록할 때, 호스트 이름 대신 IP 주소를 사용하여 서비스 레지스리에 등록한다.
-  client:  
-    register-with-eureka: true  
-    fetch-registry: true
-    service-url:
-      defaultZone: ${SPRING_EUREKA_SERVER}
+# eureka:
+#   instance:
+#     instance-id: ${spring.application.name}:${spring.cloud.client.hostname}:${server.port}
+#     prefer-ip-address: true   # Eureka 클라이언트가 자신을 등록할 때, 호스트 이름 대신 IP 주소를 사용하여 서비스 레지스리에 등록한다.
+#   client:  
+#     register-with-eureka: true  
+#     fetch-registry: true
+#     service-url:
+#       defaultZone: ${SPRING_EUREKA_SERVER}
 
 
 # Actuator 설정
