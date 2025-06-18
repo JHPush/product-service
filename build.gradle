@@ -37,6 +37,7 @@ dependencies {
 	// AWS S3 Presigned URL 생성용 의존성
 	implementation platform('software.amazon.awssdk:bom:2.25.26')
 	implementation 'software.amazon.awssdk:s3'
+	implementation 'software.amazon.awssdk:sts'
 
 	// Kafka 기본 의존성
 	implementation 'org.springframework.kafka:spring-kafka'
