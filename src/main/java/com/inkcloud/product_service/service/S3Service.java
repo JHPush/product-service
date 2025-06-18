@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
 // import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 // import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -15,6 +17,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class S3Service {
@@ -26,11 +29,15 @@ public class S3Service {
     private String bucketName;
 
     public String generatePresignedUrl(String filename) {
+        log.info("[S3Service] Presigned URL 생성 시작 - 파일명: {}", filename);
 
-        // IRSA 기반 DefaultCredentialsProvider 사용
+        DefaultCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
+        AwsCredentials credentials = credentialsProvider.resolveCredentials();
+        log.info("[S3Service] 사용 중인 IAM 역할의 AccessKeyId: {}", credentials.accessKeyId());
+
         S3Presigner presigner = S3Presigner.builder()
             .region(Region.of(region))
-            .credentialsProvider(DefaultCredentialsProvider.create())
+            .credentialsProvider(credentialsProvider)
             .build();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -44,11 +51,11 @@ public class S3Service {
             .build();
 
         URL url = presigner.presignPutObject(presignRequest).url();
+        log.info("[S3Service] Presigned URL 생성 완료: {}", url);
 
         presigner.close();
         return url.toString();
     }
-
 }
 
 
