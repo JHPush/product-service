@@ -15,8 +15,9 @@ import com.inkcloud.product_service.repository.CategoryRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -82,13 +83,24 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void reorderCategories(List<CategoryReorderRequestDto> reorderList) {
-
         for (CategoryReorderRequestDto dto : reorderList) {
             Category category = categoryRepository.findById(dto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("ID=" + dto.getId() + " 카테고리 없음"));
-            category.setOrder(dto.getOrder());
-        } 
+
+            int prevOrder = category.getOrder();
+            int newOrder = dto.getOrder();
+
+            if (prevOrder != newOrder) {
+                category.setOrder(newOrder);
+                log.info("카테고리 순서 변경: ID={}, {} → {}", dto.getId(), prevOrder, newOrder);
+            } else {
+                log.info("카테고리 순서 동일하여 생략: ID={}, order={}", dto.getId(), prevOrder);
+            }
+        }
+
+        categoryRepository.flush();
     }
+
 
     private CategoryResponseDto entityToDto(Category category) {
 
