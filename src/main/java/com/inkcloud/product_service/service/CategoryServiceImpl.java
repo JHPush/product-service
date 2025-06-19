@@ -63,9 +63,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(Long categoryId) {
-
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 카테고리를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException("해당 카테고리를 찾을 수 없습니다."));
+
+        if (!category.getChildren().isEmpty()) {
+            throw new IllegalStateException("하위 카테고리가 존재하여 삭제할 수 없습니다.");
+        }
 
         categoryRepository.delete(category);
     }
