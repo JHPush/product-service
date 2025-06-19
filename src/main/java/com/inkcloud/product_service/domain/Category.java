@@ -3,6 +3,7 @@ package com.inkcloud.product_service.domain;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -39,6 +40,9 @@ public class Category {
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
     private List<Category> children;
 
+    @Column(name = "category_order")
+    private int order;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -53,4 +57,7 @@ public class Category {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void setOrder(int order) {
+        this.order = order;
+    }
 }

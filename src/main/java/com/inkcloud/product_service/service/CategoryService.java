@@ -2,6 +2,7 @@ package com.inkcloud.product_service.service;
 
 import java.util.List;
 
+import com.inkcloud.product_service.dto.CategoryReorderRequestDto;
 import com.inkcloud.product_service.dto.CategoryRequestDto;
 import com.inkcloud.product_service.dto.CategoryResponseDto;
 import com.inkcloud.product_service.dto.CategoryUpdateDto;
@@ -15,4 +16,7 @@ public interface CategoryService {
     void updateCategory(Long categoryId, CategoryUpdateDto updateDto);
 
     void deleteCategory(Long categoryId);
+
+    void reorderCategories(List<CategoryReorderRequestDto> reorderList);
+    
 }

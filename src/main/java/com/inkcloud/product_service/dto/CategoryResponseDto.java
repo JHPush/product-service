@@ -20,6 +20,8 @@ public class CategoryResponseDto {
 
     private Long parentId;
 
+    private int order;
+
     private LocalDateTime createdAt;
     
     private LocalDateTime updatedAt;

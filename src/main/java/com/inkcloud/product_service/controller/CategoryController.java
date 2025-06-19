@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.inkcloud.product_service.dto.CategoryReorderRequestDto;
 import com.inkcloud.product_service.dto.CategoryRequestDto;
 import com.inkcloud.product_service.dto.CategoryResponseDto;
 import com.inkcloud.product_service.dto.CategoryUpdateDto;
@@ -71,6 +72,18 @@ public class CategoryController {
         log.info("카테고리 삭제: ID={}", id);
 
         return ResponseEntity.ok("카테고리 삭제 완료 (ID: " + id + ")");
+    }
+
+    // 5. 카테고리 재정렬
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/reorder")
+    public ResponseEntity<String> reorderCategories(
+            @RequestBody List<CategoryReorderRequestDto> reorderList) {
+
+        categoryService.reorderCategories(reorderList);
+        log.info("카테고리 순서 재정렬 완료");
+
+        return ResponseEntity.ok("카테고리 순서 저장 완료");
     }
     
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.inkcloud.product_service.domain.Category;
+import com.inkcloud.product_service.dto.CategoryReorderRequestDto;
 import com.inkcloud.product_service.dto.CategoryRequestDto;
 import com.inkcloud.product_service.dto.CategoryResponseDto;
 import com.inkcloud.product_service.dto.CategoryUpdateDto;
@@ -24,8 +25,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
+    @Transactional
     public Long createCategory(CategoryRequestDto requestDto) {
-
         Category parent = null;
 
         if (requestDto.getParentId() != null) {
@@ -33,9 +34,14 @@ public class CategoryServiceImpl implements CategoryService {
                     .orElseThrow(() -> new EntityNotFoundException("상위 카테고리가 존재하지 않습니다."));
         }
 
+        // 가장 큰 order 값을 구함
+        Integer maxOrder = categoryRepository.findMaxOrderByParentId(requestDto.getParentId());
+        int nextOrder = (maxOrder == null ? 0 : maxOrder + 1);
+
         Category category = Category.builder()
                 .name(requestDto.getName())
                 .parent(parent)
+                .order(nextOrder)
                 .build();
 
         return categoryRepository.save(category).getId();
@@ -73,6 +79,16 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.delete(category);
     }
 
+    @Override
+    @Transactional
+    public void reorderCategories(List<CategoryReorderRequestDto> reorderList) {
+
+        for (CategoryReorderRequestDto dto : reorderList) {
+            Category category = categoryRepository.findById(dto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("ID=" + dto.getId() + " 카테고리 없음"));
+            category.setOrder(dto.getOrder());
+        } 
+    }
 
     private CategoryResponseDto entityToDto(Category category) {
 
@@ -80,6 +96,7 @@ public class CategoryServiceImpl implements CategoryService {
                 category.getId(),
                 category.getName(),
                 category.getParent() != null ? category.getParent().getId() : null,
+                category.getOrder(),
                 category.getCreatedAt(),
                 category.getUpdatedAt()
         );
