@@ -2,6 +2,7 @@ package com.inkcloud.product_service.repository;
 
 import com.inkcloud.product_service.domain.Product;
 import com.inkcloud.product_service.domain.QProduct;
+import com.inkcloud.product_service.dto.AdminProductSearchCondition;
 import com.inkcloud.product_service.dto.CategoryCountDto;
 import com.inkcloud.product_service.dto.ProductSearchCondition;
 import com.querydsl.core.BooleanBuilder;
@@ -10,7 +11,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -81,6 +84,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository{
             case "PRICE_HIGH" -> product.price.desc();
             case "PRICE_LOW"  -> product.price.asc();
             case "LATEST"     -> product.createdAt.desc();
+            case "NEWEST"     -> product.publicationDate.desc();
             default           -> product.createdAt.desc(); // fallback
         };
     }
@@ -131,4 +135,78 @@ public class CustomProductRepositoryImpl implements CustomProductRepository{
                 .groupBy(product.category.id, product.category.name)
                 .fetch();
     }
+
+    // 관리자 전용
+    @Override
+    public Page<Product> searchProductsByAdmin(AdminProductSearchCondition condition, Pageable pageable) {
+        
+        QProduct product = QProduct.product;
+        BooleanBuilder builder = new BooleanBuilder();
+
+        // 1. 키워드 + 선택 필드 + 연산자 적용
+        if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
+            List<String> fields = condition.getSearchFields();
+            if (fields != null && !fields.isEmpty()) {
+                BooleanBuilder keywordBuilder = new BooleanBuilder();
+
+                for (String field : fields) {
+                    switch (field) {
+                        case "name" -> keywordBuilder.or(product.name.containsIgnoreCase(condition.getKeyword()));
+                        case "author" -> keywordBuilder.or(product.author.containsIgnoreCase(condition.getKeyword()));
+                        case "publisher" -> keywordBuilder.or(product.publisher.containsIgnoreCase(condition.getKeyword()));
+                        case "isbn" -> keywordBuilder.or(product.isbn.containsIgnoreCase(condition.getKeyword()));
+                    }
+                }
+
+                // OR / AND 처리
+                if ("AND".equalsIgnoreCase(condition.getOperator())) {
+                    builder.and(keywordBuilder);
+                } else if ("OR".equalsIgnoreCase(condition.getOperator())) {
+                    builder.or(keywordBuilder);
+                } else if ("NOT".equalsIgnoreCase(condition.getOperator())) {
+                    builder.and(keywordBuilder.not());
+                } else {
+                    builder.and(keywordBuilder); // default
+                }
+            }
+        }
+
+        // 2. 상태 필터링
+        if (condition.getStatuses() != null && !condition.getStatuses().isEmpty()) {
+            builder.and(product.status.in(condition.getStatuses()));
+        }
+
+        // 3. 카테고리 필터링
+        if (condition.getCategoryIds() != null && !condition.getCategoryIds().isEmpty()) {
+            builder.and(product.category.id.in(condition.getCategoryIds()));
+        }
+
+        // 4. 출간일 범위 필터링
+        if (StringUtils.hasText(condition.getStartDate())) {
+            builder.and(product.publicationDate.goe(LocalDate.parse(condition.getStartDate())));
+        }
+        if (StringUtils.hasText(condition.getEndDate())) {
+            builder.and(product.publicationDate.loe(LocalDate.parse(condition.getEndDate())));
+        }
+
+        // 5. 정렬 지정
+        OrderSpecifier<?> orderSpecifier = getSortOrder(condition.getSortType());
+
+        List<Product> content = queryFactory
+                .selectFrom(product)
+                .where(builder)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(orderSpecifier)
+                .fetch();
+
+        long total = queryFactory
+                .select(product.count())
+                .from(product)
+                .where(builder)
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
 }

@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inkcloud.product_service.domain.Category;
 import com.inkcloud.product_service.domain.Product;
 import com.inkcloud.product_service.domain.Status;
+import com.inkcloud.product_service.dto.AdminProductSearchCondition;
 import com.inkcloud.product_service.dto.CategoryCountDto;
 import com.inkcloud.product_service.dto.ProductQuantityChangeResult;
 import com.inkcloud.product_service.dto.ProductQuantityDeltaDto;
@@ -187,7 +188,14 @@ public class ProductServiceImpl implements ProductService{
         }
     }
 
-    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDto> searchProductsByAdmin(AdminProductSearchCondition condition, Pageable pageable) {
+
+        Page<Product> productPage = productRepository.searchProductsByAdmin(condition, pageable);
+        
+        return productPage.map(this::entityToDto);
+    }
 
 
     // ProductRequestDto → Product

@@ -2,6 +2,7 @@ package com.inkcloud.product_service.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.inkcloud.product_service.dto.AdminProductSearchCondition;
 import com.inkcloud.product_service.dto.ProductQuantityDeltaDto;
 import com.inkcloud.product_service.dto.ProductQuantityResponseDto;
 import com.inkcloud.product_service.dto.ProductQuantityUpdateDto;
@@ -134,6 +136,16 @@ public class ProductController {
         log.info("상품 재고 증감 요청 처리 완료: {}", dto.getDtos());
         
         return ResponseEntity.ok("재고가 변경되었습니다.");
+    }
+
+    // 9. 관리자 상품 검색
+    @GetMapping("/admin/search")
+    public ResponseEntity<Page<ProductResponseDto>> searchProductsByAdmin(
+            @ModelAttribute AdminProductSearchCondition condition,
+            Pageable pageable) {
+
+        Page<ProductResponseDto> result = productService.searchProductsByAdmin(condition, pageable);
+        return ResponseEntity.ok(result);
     }
 
 }

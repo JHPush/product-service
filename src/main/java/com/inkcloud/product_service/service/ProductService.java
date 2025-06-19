@@ -2,8 +2,10 @@ package com.inkcloud.product_service.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.inkcloud.product_service.dto.AdminProductSearchCondition;
 import com.inkcloud.product_service.dto.ProductQuantityDeltaDto;
 import com.inkcloud.product_service.dto.ProductQuantityResponseDto;
 import com.inkcloud.product_service.dto.ProductQuantityUpdateDto;
@@ -38,5 +40,9 @@ public interface ProductService {
 
     // 재고 증감
     void updateProductQuantityDelta(ProductQuantityDeltaDto dto);
+
+    // 관리자 상품 검색
+    Page<ProductResponseDto> searchProductsByAdmin(AdminProductSearchCondition condition, Pageable pageable);
+
 
 }
