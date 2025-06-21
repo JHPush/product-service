@@ -6,37 +6,37 @@ import com.inkcloud.product_service.domain.Status;
 import com.inkcloud.product_service.repository.CategoryRepository;
 import com.inkcloud.product_service.repository.ProductRepository;
 import com.inkcloud.product_service.util.S3UploadUtil;
+import com.opencsv.CSVReader;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ProductDataInitializer implements CommandLineRunner {
+public class ProductDataInitializer {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final S3UploadUtil s3UploadUtil;
 
-    @Override
-    public void run(String... args) throws Exception {
-        log.info("상품 초기화 시작");
+    @PostConstruct
+    public void initProducts() {
+        log.info("📦 상품 초기화 시작");
 
-        var resource = new ClassPathResource("data/products.csv");
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-            var lines = reader.lines().skip(1).collect(Collectors.toList());
+        try (CSVReader reader = new CSVReader(
+                new InputStreamReader(new ClassPathResource("data/products.csv").getInputStream()))) {
 
-            for (String line : lines) {
-                String[] tokens = line.split(",", -1);
+            String[] tokens;
+            reader.readNext(); // 헤더 건너뜀
+
+            while ((tokens = reader.readNext()) != null) {
                 if (tokens.length < 13) continue;
 
                 String name = tokens[0].trim();
@@ -50,11 +50,8 @@ public class ProductDataInitializer implements CommandLineRunner {
                 Long categoryId = Long.parseLong(tokens[8].trim());
                 int quantity = Integer.parseInt(tokens[9].trim());
 
-
-                // 상태값 파싱
                 String statusStr = tokens[10].trim().toUpperCase();
                 Status status;
-                
                 try {
                     status = Status.valueOf(statusStr);
                 } catch (IllegalArgumentException e) {
@@ -62,26 +59,13 @@ public class ProductDataInitializer implements CommandLineRunner {
                     status = Status.ON_SALE;
                 }
 
-
-                // ISBN 소수점 제거 처리
-                String isbn;
-                try {
-                    double isbnDouble = Double.parseDouble(tokens[11].trim());
-                    isbn = String.format("%.0f", isbnDouble); // ex: 9788936439743.0 → "9788936439743"
-                } catch (NumberFormatException e) {
-                    log.warn("잘못된 ISBN 형식: {}", tokens[11]);
-                    isbn = tokens[11].trim();
-                }
-
+                // ISBN: 실수 형식으로 들어올 경우 ".0" 제거
+                String isbnRaw = tokens[11].trim();
+                String isbn = isbnRaw.endsWith(".0") ? isbnRaw.replace(".0", "") : isbnRaw;
 
                 String intro = tokens[12].trim();
 
-                
-                // 파일명: UUID.jpg만 생성 (폴더 경로는 내부에서 처리)
-                String filename = UUID.randomUUID() + ".jpg";
-
-                // S3에 업로드 후 Public URL 반환
-                String s3ImageUrl = s3UploadUtil.uploadImageFromUrl(imageUrl, filename);
+                String s3ImageUrl = s3UploadUtil.uploadImageFromUrl(imageUrl, "products");
                 if (s3ImageUrl == null) continue;
 
                 Category category = categoryRepository.findById(categoryId).orElse(null);
@@ -110,9 +94,9 @@ public class ProductDataInitializer implements CommandLineRunner {
             }
 
         } catch (Exception e) {
-            log.error("상품 초기화 실패", e);
+            log.error("🚨 상품 초기화 실패", e);
         }
 
-        log.info("상품 초기화 완료");
+        log.info("✅ 상품 초기화 완료");
     }
 }
