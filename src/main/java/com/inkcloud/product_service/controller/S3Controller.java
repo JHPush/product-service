@@ -22,7 +22,7 @@ public class S3Controller {
     @GetMapping("/upload-url")
     public ResponseEntity<String> getUploadUrl(@RequestParam String filename) {
         
-        String url = s3Service.generatePresignedUrl(filename);
+        String url = s3Service.generatePresignedUrl("products/" + filename);
 
         return ResponseEntity.ok(url);
     }

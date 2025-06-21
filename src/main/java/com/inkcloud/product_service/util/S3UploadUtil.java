@@ -18,12 +18,12 @@ public class S3UploadUtil {
 
     private final S3Service s3Service;
 
-    public String uploadImageFromUrl(String imageUrl, String filename) {
+    public String uploadImageFromUrl(String imageUrl, String prefix) {
+        String filename = UUID.randomUUID() + ".jpg";
+        String key = prefix + "/" + filename;
 
-        String s3Key = "products/" + filename;
-        
         try (InputStream inputStream = new URL(imageUrl).openStream()) {
-            String presignedUrl = s3Service.generatePresignedUrl(s3Key);
+            String presignedUrl = s3Service.generatePresignedUrl(key);
             HttpURLConnection connection = (HttpURLConnection) new URL(presignedUrl).openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("PUT");
@@ -35,10 +35,10 @@ public class S3UploadUtil {
 
             int responseCode = connection.getResponseCode();
             if (responseCode == 200) {
-                log.info("[S3] 업로드 성공: {}", filename);
-                return s3Service.getPublicUrl(filename); // S3 공개 URL 반환
+                log.info("[S3] 업로드 성공: {}", key);
+                return s3Service.getPublicUrl(key);
             } else {
-                log.error("[S3] 업로드 실패: {} - {}", responseCode, filename);
+                log.error("[S3] 업로드 실패: {} - {}", responseCode, key);
                 return null;
             }
 

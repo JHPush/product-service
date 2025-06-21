@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStreamReader;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -59,7 +58,6 @@ public class ProductDataInitializer {
                     status = Status.ON_SALE;
                 }
 
-                // ISBN: 실수 형식으로 들어올 경우 ".0" 제거
                 String isbnRaw = tokens[11].trim();
                 String isbn = isbnRaw.endsWith(".0") ? isbnRaw.replace(".0", "") : isbnRaw;
 
