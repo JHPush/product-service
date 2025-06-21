@@ -1,23 +1,26 @@
-# Docker Image
-# multi-stage build를 사용하여 Spring Boot 애플리케이션을 Docker 이미지로 패키징
-
-# gralew clean build
-
+# Stage 1: Build and extract Spring Boot layers
 FROM openjdk:17-slim AS build
 WORKDIR /application
 
-# ARG : Dockerfile에서 빌드 타임(Build time)에 값을 설정할 수 있는 변수를 정의하는 명령어
+# 빌드된 JAR 경로 설정
 ARG JAR_FILE=build/libs/product-service-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE}  application.jar
+COPY ${JAR_FILE} application.jar
+
+# Spring Boot layered JAR 추출
 RUN java -Djarmode=layertools -jar application.jar extract
 
-
+# Stage 2: Final image with layers
 FROM openjdk:17-slim
 WORKDIR /application
-COPY --from=build application/dependencies/ ./
-COPY --from=build application/spring-boot-loader/ ./
-COPY --from=build application/snapshot-dependencies/ ./
-COPY --from=build application/application/ ./
-# COPY .env /application/.env
-# ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"] 
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"] 
+
+# Spring Boot layers 복사
+COPY --from=build /application/dependencies/ ./dependencies/
+COPY --from=build /application/spring-boot-loader/ ./spring-boot-loader/
+COPY --from=build /application/snapshot-dependencies/ ./snapshot-dependencies/
+COPY --from=build /application/application/ ./application/
+
+# ✅ CSV 리소스 파일 복사 (resources/data/products.csv 포함)
+COPY src/main/resources/data/ /application/application/resources/data/
+
+# 실행 설정
+ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]

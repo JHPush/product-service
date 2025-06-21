@@ -27,6 +27,9 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
+    @Value("${cloud.aws.region.static}")
+    private String region;
+
     public String generatePresignedUrl(String filename) {
         log.info("[S3Service] Presigned URL 생성 시작 - 파일명: {}", filename);
 
@@ -45,6 +48,12 @@ public class S3Service {
 
         return url.toString();
     }
+
+    // 방금 추가한 코드
+    public String getPublicUrl(String filename) {
+        return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + filename;
+    }
+
 }
 
 
