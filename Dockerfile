@@ -14,12 +14,12 @@ FROM openjdk:17-slim
 WORKDIR /application
 
 # Spring Boot layers 복사
-COPY --from=build /application/dependencies/ ./dependencies/
-COPY --from=build /application/spring-boot-loader/ ./spring-boot-loader/
-COPY --from=build /application/snapshot-dependencies/ ./snapshot-dependencies/
-COPY --from=build /application/application/ ./application/
+COPY --from=build application/dependencies/ ./
+COPY --from=build application/spring-boot-loader/ ./
+COPY --from=build application/snapshot-dependencies/ ./
+COPY --from=build application/application/ ./
 
-# ✅ CSV 리소스 파일 복사 (resources/data/products.csv 포함)
+# CSV 리소스 파일 복사 (resources/data/products.csv 포함)
 COPY src/main/resources/data/ /application/application/resources/data/
 
 # 실행 설정
