@@ -10,6 +10,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, CustomP
 
     List<Product> findTop12ByOrderByCreatedAtDesc();
 
-    List<Product> findTop12ByOrderByAverageRatingDesc();
+    List<Product> findTop12ByOrderByRatingDesc();
 
 }
