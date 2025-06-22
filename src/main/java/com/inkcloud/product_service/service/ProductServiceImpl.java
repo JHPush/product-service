@@ -25,6 +25,7 @@ import com.inkcloud.product_service.dto.ProductRequestDto;
 import com.inkcloud.product_service.dto.ProductResponseDto;
 import com.inkcloud.product_service.dto.ProductSearchCondition;
 import com.inkcloud.product_service.dto.ProductSearchResultDto;
+import com.inkcloud.product_service.dto.ProductSimpleDto;
 import com.inkcloud.product_service.dto.ProductStatusUpdateDto;
 import com.inkcloud.product_service.repository.CategoryRepository;
 import com.inkcloud.product_service.repository.ProductRepository;
@@ -195,6 +196,24 @@ public class ProductServiceImpl implements ProductService{
         Page<Product> productPage = productRepository.searchProductsByAdmin(condition, pageable);
         
         return productPage.map(this::entityToDto);
+    }
+
+    @Override
+    @Transactional
+    public List<ProductSimpleDto> getNewBooks() {
+        return productRepository.findTop12ByOrderByCreatedAtDesc()
+                .stream()
+                .map(ProductSimpleDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<ProductSimpleDto> getRecommendedBooks() {
+        return productRepository.findTop12ByOrderByAverageRatingDesc()
+                .stream()
+                .map(ProductSimpleDto::from)
+                .collect(Collectors.toList());
     }
 
 

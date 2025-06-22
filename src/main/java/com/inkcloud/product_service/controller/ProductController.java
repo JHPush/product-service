@@ -25,6 +25,7 @@ import com.inkcloud.product_service.dto.ProductRequestDto;
 import com.inkcloud.product_service.dto.ProductResponseDto;
 import com.inkcloud.product_service.dto.ProductSearchCondition;
 import com.inkcloud.product_service.dto.ProductSearchResultDto;
+import com.inkcloud.product_service.dto.ProductSimpleDto;
 import com.inkcloud.product_service.dto.ProductStatusUpdateDto;
 import com.inkcloud.product_service.service.ProductService;
 
@@ -146,6 +147,18 @@ public class ProductController {
 
         Page<ProductResponseDto> result = productService.searchProductsByAdmin(condition, pageable);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/new")
+    public ResponseEntity<List<ProductSimpleDto>> getNewBooks() {
+        
+        return ResponseEntity.ok(productService.getNewBooks());
+    }
+
+    @GetMapping("/recommended")
+    public ResponseEntity<List<ProductSimpleDto>> getRecommendedBooks() {
+
+        return ResponseEntity.ok(productService.getRecommendedBooks());
     }
 
 }

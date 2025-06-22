@@ -13,6 +13,7 @@ import com.inkcloud.product_service.dto.ProductRequestDto;
 import com.inkcloud.product_service.dto.ProductResponseDto;
 import com.inkcloud.product_service.dto.ProductSearchCondition;
 import com.inkcloud.product_service.dto.ProductSearchResultDto;
+import com.inkcloud.product_service.dto.ProductSimpleDto;
 import com.inkcloud.product_service.dto.ProductStatusUpdateDto;
 
 public interface ProductService {
@@ -44,5 +45,10 @@ public interface ProductService {
     // 관리자 상품 검색
     Page<ProductResponseDto> searchProductsByAdmin(AdminProductSearchCondition condition, Pageable pageable);
 
+    // 최신 도서 가져오기
+    List<ProductSimpleDto> getNewBooks();
+
+    // 추천 도서 가져오기
+    List<ProductSimpleDto> getRecommendedBooks();
 
 }
