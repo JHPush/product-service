@@ -210,7 +210,7 @@ public class ProductServiceImpl implements ProductService{
     @Override
     @Transactional
     public List<ProductSimpleDto> getRecommendedBooks() {
-        return productRepository.findTop12ByOrderByAverageRatingDesc()
+        return productRepository.findTop12ByOrderByRatingDesc()
                 .stream()
                 .map(ProductSimpleDto::from)
                 .collect(Collectors.toList());
