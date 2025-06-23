@@ -201,19 +201,25 @@ public class ProductServiceImpl implements ProductService{
     @Override
     @Transactional
     public List<ProductSimpleDto> getNewBooks() {
-        return productRepository.findTop12ByOrderByCreatedAtDesc()
+        List<ProductSimpleDto> books = productRepository.findTop12ByOrderByCreatedAtDesc()
                 .stream()
                 .map(ProductSimpleDto::from)
                 .collect(Collectors.toList());
+
+        log.info("[신작 도서 조회] 결과: {}", books);
+        return books;
     }
 
     @Override
     @Transactional
     public List<ProductSimpleDto> getRecommendedBooks() {
-        return productRepository.findTop12ByOrderByRatingDesc()
+        List<ProductSimpleDto> books = productRepository.findTop12ByOrderByRatingDesc()
                 .stream()
                 .map(ProductSimpleDto::from)
                 .collect(Collectors.toList());
+
+        log.info("[추천 도서 조회] 결과: {}", books);
+        return books;
     }
 
 

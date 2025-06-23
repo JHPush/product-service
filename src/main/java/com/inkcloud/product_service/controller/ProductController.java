@@ -152,13 +152,21 @@ public class ProductController {
     @GetMapping("/new")
     public ResponseEntity<List<ProductSimpleDto>> getNewBooks() {
         
-        return ResponseEntity.ok(productService.getNewBooks());
+        List<ProductSimpleDto> result = productService.getNewBooks();
+
+        log.info("[응답] /new - 결과 개수: {}", result.size());
+
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/recommended")
     public ResponseEntity<List<ProductSimpleDto>> getRecommendedBooks() {
 
-        return ResponseEntity.ok(productService.getRecommendedBooks());
+        List<ProductSimpleDto> result = productService.getRecommendedBooks();
+
+        log.info("[응답] /recomended - 결과 개수: {}", result.size());
+
+        return ResponseEntity.ok(result);
     }
 
 }
