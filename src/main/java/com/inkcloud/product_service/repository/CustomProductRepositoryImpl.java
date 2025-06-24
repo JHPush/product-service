@@ -83,7 +83,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository{
             case "RATING"     -> product.rating.desc();
             case "PRICE_HIGH" -> product.price.desc();
             case "PRICE_LOW"  -> product.price.asc();
-            case "LATEST"     -> product.createdAt.desc();
+            case "LATEST"     -> product.publicationDate.desc();
             case "NEWEST"     -> product.publicationDate.desc();
             default           -> product.createdAt.desc(); // fallback
         };

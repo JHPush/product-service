@@ -27,7 +27,7 @@ public class ProductDataInitializer {
 
     @PostConstruct
     public void initProducts() {
-        log.info("📦 상품 초기화 시작");
+        log.info("상품 초기화 시작");
 
         try (CSVReader reader = new CSVReader(
                 new InputStreamReader(new ClassPathResource("data/products.csv").getInputStream()))) {
@@ -92,9 +92,9 @@ public class ProductDataInitializer {
             }
 
         } catch (Exception e) {
-            log.error("🚨 상품 초기화 실패", e);
+            log.error("상품 초기화 실패", e);
         }
 
-        log.info("✅ 상품 초기화 완료");
+        log.info("상품 초기화 완료");
     }
 }

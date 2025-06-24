@@ -23,7 +23,7 @@ public class CategoryDataInitializer {
 
     @PostConstruct
     public void initCategories() {
-        log.info("📂 카테고리 초기화 시작");
+        log.info("카테고리 초기화 시작");
 
         Map<Long, Category> savedMap = new HashMap<>();
         List<CategoryRow> rows = new ArrayList<>();
@@ -73,7 +73,7 @@ public class CategoryDataInitializer {
                 if (row.parentId != null) {
                     Category parent = savedMap.get(row.parentId);
                     if (parent == null) {
-                        log.warn("❗ parent 연결 실패 - 카테고리: {}, parent_id: {}", row.name, row.parentId);
+                        log.warn("parent 연결 실패 - 카테고리: {}, parent_id: {}", row.name, row.parentId);
                         continue;
                     }
 
@@ -90,10 +90,10 @@ public class CategoryDataInitializer {
             }
 
         } catch (Exception e) {
-            log.error("🚨 카테고리 초기화 실패", e);
+            log.error("카테고리 초기화 실패", e);
         }
 
-        log.info("✅ 카테고리 초기화 완료");
+        log.info("카테고리 초기화 완료");
     }
 
     record CategoryRow(String name, Long parentId, int order) {}
